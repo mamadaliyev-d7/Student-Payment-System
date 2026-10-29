@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>Учёт оплат — учебный центр</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B5D66'/%3E%3Cpath d='M10 9v8a6 6 0 0 0 12 0V9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#view">Перейти к содержимому</a>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7"/><path d="M10 9v8a6 6 0 0 0 12 0V9"/></svg>
+        <div>
+          <div class="brand-title">Учёт оплат</div>
+          <div class="brand-sub">Учебный центр</div>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Разделы">
+        <a href="#/dashboard" data-route="dashboard">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          <span>Дашборд</span>
+        </a>
+        <a href="#/students" data-route="students">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.4c2 .8 3.5 2.6 3.5 5.6"/></svg>
+          <span>Ученики</span>
+        </a>
+        <a href="#/debtors" data-route="debtors">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.6v.01"/></svg>
+          <span>Должники</span>
+        </a>
+      </nav>
+      <p class="sidebar-note">Все суммы указаны в узбекских сумах (UZS)</p>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <h1 id="page-title">Дашборд</h1>
+        <div class="topbar-actions">
+          <div class="month-switch" role="group" aria-label="Выбор месяца">
+            <button type="button" id="month-prev" aria-label="Предыдущий месяц">‹</button>
+            <input type="month" id="month-input" aria-label="Месяц" pattern="[0-9]{4}-[0-9]{2}" placeholder="ГГГГ-ММ" min="2000-01" max="2100-12">
+            <button type="button" id="month-next" aria-label="Следующий месяц">›</button>
+          </div>
+          <button type="button" class="btn primary" id="btn-add-payment">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Принять оплату
+          </button>
+        </div>
+      </header>
+
+      <main id="view" tabindex="-1"></main>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Разделы">
+    <a href="#/dashboard" data-route="dashboard">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      <span>Дашборд</span>
+    </a>
+    <a href="#/students" data-route="students">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.4c2 .8 3.5 2.6 3.5 5.6"/></svg>
+      <span>Ученики</span>
+    </a>
+    <a href="#/debtors" data-route="debtors">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.6v.01"/></svg>
+      <span>Должники</span>
+    </a>
+  </nav>
+
+  <!-- Форма ученика (добавление и редактирование) -->
+  <dialog id="student-dialog" class="dialog" aria-labelledby="student-dialog-title">
+    <form id="student-form" novalidate>
+      <div class="dialog-head"><h2 id="student-dialog-title">Новый ученик</h2></div>
+      <div class="dialog-body">
+        <div class="form-error" id="student-form-error" role="alert" hidden></div>
+        <div class="field">
+          <label for="student-name">Имя ученика</label>
+          <input id="student-name" type="text" maxlength="100" autocomplete="off" required>
+          <p class="field-error" hidden></p>
+        </div>
+        <div class="field">
+          <label for="student-phone">Телефон</label>
+          <input id="student-phone" type="tel" maxlength="30" placeholder="+998 90 123 45 67" autocomplete="off" required>
+          <p class="field-error" hidden></p>
+        </div>
+        <div class="field">
+          <label for="student-group">Группа</label>
+          <input id="student-group" type="text" maxlength="100" list="group-options" autocomplete="off" required>
+          <datalist id="group-options"></datalist>
+          <p class="field-error" hidden></p>
+        </div>
+        <div class="field">
+          <label for="student-fee">Стоимость обучения в месяц, сум</label>
+          <input id="student-fee" type="number" inputmode="numeric" min="0" step="1" required>
+          <p class="field-hint" id="student-fee-preview"></p>
+          <p class="field-error" hidden></p>
+        </div>
+      </div>
+      <div class="dialog-foot">
+        <button type="button" class="btn" data-close>Отмена</button>
+        <button type="submit" class="btn primary" id="student-submit">Добавить ученика</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Форма оплаты -->
+  <dialog id="payment-dialog" class="dialog" aria-labelledby="payment-dialog-title">
+    <form id="payment-form" novalidate>
+      <div class="dialog-head"><h2 id="payment-dialog-title">Принять оплату</h2></div>
+      <div class="dialog-body">
+        <div class="form-error" id="payment-form-error" role="alert" hidden></div>
+        <div class="field">
+          <label for="payment-student">Ученик</label>
+          <select id="payment-student" required></select>
+          <p class="field-error" hidden></p>
+        </div>
+        <div class="field">
+          <label for="payment-amount">Сумма оплаты, сум</label>
+          <input id="payment-amount" type="number" inputmode="numeric" min="1" step="1" required>
+          <p class="field-hint" id="payment-amount-preview"></p>
+          <p class="field-error" hidden></p>
+        </div>
+        <div class="field">
+          <label for="payment-date">Дата оплаты</label>
+          <input id="payment-date" type="date" min="2000-01-01" max="2100-12-31" required>
+          <p class="field-error" hidden></p>
+        </div>
+        <div class="hint-box" id="payment-hint" aria-live="polite" hidden></div>
+      </div>
+      <div class="dialog-foot">
+        <button type="button" class="btn" data-close>Отмена</button>
+        <button type="submit" class="btn primary" id="payment-submit">Сохранить оплату</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- История оплат ученика -->
+  <dialog id="history-dialog" class="dialog dialog-wide" aria-labelledby="history-title">
+    <div class="dialog-head dialog-head-split">
+      <div>
+        <h2 id="history-title">История оплат</h2>
+        <p class="muted" id="history-sub"></p>
+      </div>
+      <button type="button" class="icon-btn" data-close aria-label="Закрыть">×</button>
+    </div>
+    <div class="dialog-body" id="history-body"></div>
+    <div class="dialog-foot">
+      <button type="button" class="btn" data-close>Закрыть</button>
+      <button type="button" class="btn primary" id="history-add">Добавить оплату</button>
+    </div>
+  </dialog>
+
+  <!-- Подтверждение опасных действий -->
+  <dialog id="confirm-dialog" class="dialog dialog-narrow" aria-labelledby="confirm-title">
+    <div class="dialog-head"><h2 id="confirm-title"></h2></div>
+    <div class="dialog-body"><p id="confirm-message"></p></div>
+    <div class="dialog-foot">
+      <button type="button" class="btn" data-close>Отмена</button>
+      <button type="button" class="btn" id="confirm-ok">Подтвердить</button>
+    </div>
+  </dialog>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
